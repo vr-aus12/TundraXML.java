@@ -24,6 +24,7 @@
 
 package permafrost.tundra.xml;
 
+import com.googlecode.htmlcompressor.compressor.XmlCompressor;
 import com.wm.app.b2b.server.ServiceException;
 import org.apache.xml.security.Init;
 import org.apache.xml.security.c14n.Canonicalizer;
@@ -36,6 +37,7 @@ import permafrost.tundra.lang.BaseException;
 import permafrost.tundra.lang.BytesHelper;
 import permafrost.tundra.lang.CharsetHelper;
 import permafrost.tundra.lang.ExceptionHelper;
+import permafrost.tundra.lang.StringHelper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -315,5 +317,46 @@ public class XMLHelper {
         protected void append(SAXParseException exception) {
             errors.add(exception);
         }
+    }
+
+    /**
+     * Removes extraneous whitespace and comments from the given XML content.
+     *
+     * @param content               The XML content to be minified.
+     * @return                      The minified XML content.
+     * @throws IOException
+     */
+    public static InputStream minify(InputStream content) throws IOException {
+        return minify(content, null);
+    }
+
+    /**
+     * Removes extraneous whitespace and comments from the given XML content.
+     *
+     * @param content               The XML content to be minified.
+     * @param charset               The character set the character data is encoded with.
+     * @return                      The minified XML content.
+     * @throws IOException
+     */
+    public static InputStream minify(InputStream content, Charset charset) throws IOException {
+        return minify(content, charset, true, true);
+    }
+
+    /**
+     * Removes extraneous whitespace and comments from the given XML content.
+     *
+     * @param content               The XML content to be minified.
+     * @param charset               The character set the character data is encoded with.
+     * @param removeComments        Whether XML comments should be removed as part of the minification.
+     * @param removeInterTagSpaces  Whether whitespace between tags should be removed as part of the minification.
+     * @return                      The minified XML content.
+     * @throws IOException
+     */
+    public static InputStream minify(InputStream content, Charset charset, boolean removeComments, boolean removeInterTagSpaces) throws IOException {
+        XmlCompressor compressor = new XmlCompressor();
+        compressor.setRemoveComments(removeComments);
+        compressor.setRemoveIntertagSpaces(removeInterTagSpaces);
+
+        return StreamHelper.normalize(compressor.compress(StringHelper.normalize(content, charset)), charset);
     }
 }

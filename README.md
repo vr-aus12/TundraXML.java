@@ -23,6 +23,7 @@ It is also dependent on the following open source libraries, which
 are required to be included on the project's classpath:
 
 * `Tundra.jar` - https://github.com/Permafrost/Tundra.java
+* `htmlcompressor-1.5.3.jar` - https://code.google.com/p/htmlcompressor
 * `xmlsec-1.5.8.jar` - http://santuario.apache.org
 
 [JUnit] 4 is required for the unit tests in the project. The
