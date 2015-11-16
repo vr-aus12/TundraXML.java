@@ -29,6 +29,7 @@ import com.wm.app.b2b.server.ServiceException;
 import org.apache.xml.security.Init;
 import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -38,6 +39,7 @@ import permafrost.tundra.lang.BytesHelper;
 import permafrost.tundra.lang.CharsetHelper;
 import permafrost.tundra.lang.ExceptionHelper;
 import permafrost.tundra.lang.StringHelper;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -48,6 +50,12 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 
@@ -358,5 +366,50 @@ public class XMLHelper {
         compressor.setRemoveIntertagSpaces(removeInterTagSpaces);
 
         return StreamHelper.normalize(compressor.compress(StringHelper.normalize(content, charset)), charset);
+    }
+
+    /**
+     * Serializes a document to a stream using the default character set.
+     *
+     * @param document The document to be serialized.
+     * @return         The serialized document.
+     * @throws ServiceException If an XML transformation error occurs.
+     */
+    public static InputStream emit(Document document) throws ServiceException {
+        return emit(document, null);
+    }
+
+    /**
+     * Serializes a document to a stream using the given character set.
+     *
+     * @param document The document to be serialized.
+     * @param charset  The character encoding to use.
+     * @return         The serialized document.
+     * @throws ServiceException If an XML transformation error occurs.
+     */
+    public static InputStream emit(Document document, Charset charset) throws ServiceException {
+        if (charset == null) charset = CharsetHelper.DEFAULT_CHARSET;
+        InputStream content = null;
+
+        if (document != null) {
+            try {
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+                TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                // always defend against denial of service attacks
+                transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+                Transformer transformer = transformerFactory.newTransformer();
+                transformer.setOutputProperty(OutputKeys.ENCODING, charset.displayName());
+
+                transformer.transform(new DOMSource(document), new StreamResult(byteArrayOutputStream));
+
+                content = StreamHelper.normalize(byteArrayOutputStream.toByteArray());
+            } catch (TransformerException ex) {
+                ExceptionHelper.raise(ex);
+            }
+        }
+
+        return content;
     }
 }
