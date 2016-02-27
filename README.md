@@ -56,7 +56,7 @@ further details.
 
 [JAR]: <http://en.wikipedia.org/wiki/JAR_(file_format)>
 [JUnit]: <http://junit.org/>
-[LICENSE]: <https://github.com/Permafrost/TundraTN.java/blob/master/LICENSE>
+[LICENSE]: <https://github.com/Permafrost/TundraXML.java/blob/master/LICENSE>
 [Tundra]: <https://github.com/Permafrost/Tundra>
 [TundraTN]: <https://github.com/Permafrost/TundraTN>
 [Tundra.java]: <https://github.com/Permafrost/Tundra.java>
