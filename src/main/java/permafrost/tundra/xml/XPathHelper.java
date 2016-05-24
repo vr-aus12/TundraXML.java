@@ -26,14 +26,21 @@ package permafrost.tundra.xml;
 
 import com.wm.app.b2b.server.ServiceException;
 import com.wm.data.IData;
+
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
 import permafrost.tundra.io.StreamHelper;
 import permafrost.tundra.lang.ExceptionHelper;
 import permafrost.tundra.xml.namespace.IDataNamespaceContext;
+
 import java.io.IOException;
 import java.io.InputStream;
+
+
+
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -136,5 +143,51 @@ public class XPathHelper {
 
         return result;
     }
+    
+    /**
+     * Returns the root node of a xml document 
+     * @throws ServiceException 
+     *
+     */
+    
+    public static String rootNode(InputStream content, IData namespaceContext) throws ServiceException{
+    	return rootNode(content, new IDataNamespaceContext(namespaceContext));
+    }
 
+    public static String rootNode(InputStream content, NamespaceContext namespaceContext) throws ServiceException{
+    	String rootNode=null;
+        try {
+        	rootNode = rootNode(new InputSource(content), namespaceContext);
+        } finally {
+            StreamHelper.close(content);
+        }
+
+    	return rootNode;
+    }
+    
+    public static String rootNode(InputSource content, NamespaceContext namespaceContext) throws ServiceException{
+    	String rootNode=null;
+    	try{
+		    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		    factory.setNamespaceAware(namespaceContext != null);
+		    DocumentBuilder parser = factory.newDocumentBuilder();
+		    rootNode = rootNode(parser.parse(content), namespaceContext);
+    	}catch(ParserConfigurationException ex){
+    		ExceptionHelper.raise(ex);
+    	} catch (SAXException ex) {
+    		ExceptionHelper.raise(ex);
+		} catch (IOException ex) {
+			ExceptionHelper.raise(ex);
+		}
+    	
+    	return rootNode;
+    }
+    
+    public static String rootNode(Document content, NamespaceContext namespaceContext){
+    	String rootNode=null;
+    	Element root = content.getDocumentElement();
+    	
+    	rootNode=root.getNodeName();
+    	return rootNode;
+    }
 }
